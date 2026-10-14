@@ -22,9 +22,9 @@ function App() {
             </AccordionItem>
           
             <AccordionItem value="item-1">
-              <AccordionTrigger>AI ni organishim shartmi ?</AccordionTrigger>
+              <AccordionTrigger>Guruh loyihasini qilish shartmi shartmi ?</AccordionTrigger>
               <AccordionContent>
-                  Albatta, AI zamonida bu juda muhim!
+                  Albatta,  bu juda muhim!
               </AccordionContent>
             </AccordionItem>
 
