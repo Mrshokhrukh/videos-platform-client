@@ -1,0 +1,2 @@
+import { Link } from 'react-router-dom'
+export default function NotFoundPage() { return <main className="grid min-h-screen place-items-center p-6 text-center"><div><p className="text-sm font-semibold text-primary">404</p><h1 className="mt-2 text-3xl font-bold">Sahifa topilmadi</h1><p className="mt-2 text-muted-foreground">Bu manzil mavjud emas yoki ko‘chirilgan.</p><Link to="/" className="mt-6 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Bosh sahifaga qaytish</Link></div></main> }
