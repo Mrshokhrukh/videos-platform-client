@@ -1,7 +1,10 @@
-import { NavLink, Navigate, Route, Routes } from "react-router-dom"
+import { NavLink, Navigate, Outlet, Route, Routes } from "react-router-dom"
 import { BookOpen, LayoutDashboard, GraduationCap } from "lucide-react"
 import AdminGroupsPage from "./pages/admin/groups/AdminGroupsPage"
 import AdminGroupDetailPage from "./pages/admin/groups/AdminGroupDetailPage"
+import StudentHomePage from "./pages/student/home/StudentHomePage"
+import StudentGroupPage from "./pages/student/group/StudentGroupPage"
+import LessonPage from "./pages/student/lesson/LessonPage"
 
 function AdminLayout() {
   return (
@@ -51,11 +54,7 @@ function AdminLayout() {
           </div>
         </header>
         <main className="mx-auto w-full max-w-7xl p-5 sm:p-8">
-          <Routes>
-            <Route path="/admin/groups" element={<AdminGroupsPage />} />
-            <Route path="/admin/groups/:id" element={<AdminGroupDetailPage />} />
-            <Route path="*" element={<Navigate to="/admin/groups" replace />} />
-          </Routes>
+          <Outlet />
         </main>
       </div>
     </div>
@@ -63,5 +62,18 @@ function AdminLayout() {
 }
 
 export default function App() {
-  return <AdminLayout />
+  return (
+    <Routes>
+      <Route path="/" element={<StudentHomePage />} />
+      <Route path="/group/:id" element={<StudentGroupPage />} />
+      <Route path="/lesson/:id" element={<LessonPage />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Navigate to="groups" replace />} />
+        <Route path="groups" element={<AdminGroupsPage />} />
+        <Route path="groups/:id" element={<AdminGroupDetailPage />} />
+        <Route path="*" element={<Navigate to="groups" replace />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }

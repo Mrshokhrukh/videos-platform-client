@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { ArrowLeft, BookOpen, Clock3, LoaderCircle, Pencil, Plus, Trash2, UserPlus, Users, Video } from "lucide-react"
+import { ArrowLeft, BookOpen, Clock3, LoaderCircle, MoreVertical, Pencil, Plus, Trash2, UserPlus, Users, Video } from "lucide-react"
 import { Button } from "../../../components/ui/button"
 import AddStudentModal from "../../../components/groups/AddStudentModal"
 import ConfirmDialog from "../../../components/groups/ConfirmDialog"
 import EditGroupModal from "../../../components/groups/EditGroupModal"
+import EditLessonModal from "../../../components/video/EditLessonModal"
 import { deleteGroup, getGroupById, getGroupLessons, getGroupMembers, removeStudentFromGroup, updateGroup } from "../../../lib/api"
 import { formatDuration, getInitials } from "../../../lib/utils"
 
@@ -21,6 +22,8 @@ export default function AdminGroupDetailPage() {
   const [editing, setEditing] = useState(false)
   const [confirm, setConfirm] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [editingLesson, setEditingLesson] = useState(null)
+  const [lessonMenuId, setLessonMenuId] = useState(null)
 
   const loadDetails = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true)
@@ -28,7 +31,7 @@ export default function AdminGroupDetailPage() {
     try {
       const [groupData, lessonData, memberData] = await Promise.all([
         getGroupById(id),
-        getGroupLessons(id),
+        getGroupLessons(id, { includeUnpublished: true }),
         getGroupMembers(id),
       ])
       setGroup(groupData)
@@ -43,7 +46,7 @@ export default function AdminGroupDetailPage() {
 
   useEffect(() => {
     let active = true
-    Promise.all([getGroupById(id), getGroupLessons(id), getGroupMembers(id)])
+    Promise.all([getGroupById(id), getGroupLessons(id, { includeUnpublished: true }), getGroupMembers(id)])
       .then(([groupData, lessonData, memberData]) => {
         if (!active) return
         setGroup(groupData)
@@ -155,13 +158,25 @@ export default function AdminGroupDetailPage() {
               <div className="divide-y divide-slate-100">
                 {lessons.map((lesson, index) => (
                   <div key={lesson.id} className="flex items-center gap-4 py-4 first:pt-1 last:pb-1">
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-700">{index + 1}</span>
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-700">{lesson.order ?? index + 1}</span>
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500"><Video size={18} /></span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-slate-900">{lesson.title}</p>
-                      <p className="mt-1 text-xs text-slate-500">Video dars</p>
+                      <p className="mt-1 text-xs text-slate-500">{lesson.isPublished === false ? "Qoralama" : "Nashr qilingan"}</p>
                     </div>
                     <span className="inline-flex items-center gap-1.5 text-sm text-slate-500"><Clock3 size={15} />{formatDuration(lesson.duration)}</span>
+                    <div className="relative">
+                      <button type="button" aria-label={`${lesson.title} amallari`} aria-expanded={lessonMenuId === lesson.id} onClick={() => setLessonMenuId((current) => current === lesson.id ? null : lesson.id)} className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
+                        <MoreVertical size={18} />
+                      </button>
+                      {lessonMenuId === lesson.id && (
+                        <div role="menu" className="absolute right-0 top-full z-20 mt-1 w-36 rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
+                          <button type="button" role="menuitem" onClick={() => { setEditingLesson(lesson); setLessonMenuId(null) }} className="w-full rounded-md px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50">
+                            Tahrirlash
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -212,6 +227,12 @@ export default function AdminGroupDetailPage() {
         group={group}
         onClose={() => setEditing(false)}
         onSubmit={async (data) => { await updateGroup(id, data); await loadDetails(false) }}
+      />
+      <EditLessonModal
+        open={Boolean(editingLesson)}
+        lesson={editingLesson}
+        onClose={() => setEditingLesson(null)}
+        onUpdated={() => loadDetails(false)}
       />
       <AddStudentModal
         open={addStudentOpen}
